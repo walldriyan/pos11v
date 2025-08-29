@@ -1,0 +1,402 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id                        String    @id @default(cuid())
+  username                  String    @unique
+  email                     String?   @unique
+  passwordHash              String
+  isActive                  Boolean   @default(true)
+  roleId                    String
+  role                      Role      @relation(fields: [roleId], references: [id])
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+  createdByUserId           String?
+  updatedByUserId           String?
+  companyId                 String?
+  company                   CompanyProfile? @relation(fields: [companyId], references: [id])
+
+  createdParties            Party[]      @relation("CreatedParties")
+  updatedParties            Party[]      @relation("UpdatedParties")
+  createdProducts           Product[]    @relation("CreatedProducts")
+  updatedProducts           Product[]    @relation("UpdatedProducts")
+  createdPurchaseBills      PurchaseBill[] @relation("CreatedPurchaseBills")
+  recordedPurchasePayments  PurchasePayment[] @relation("RecordedPurchasePayments")
+  createdSaleRecords        SaleRecord[] @relation("CreatedSaleRecords")
+  recordedPaymentInstallments PaymentInstallment[] @relation("RecordedPaymentInstallments")
+
+  createdDiscountSets       DiscountSet[] @relation("CreatedDiscountSets")
+  updatedDiscountSets       DiscountSet[] @relation("UpdatedDiscountSets")
+
+  updatedAppConfigs         AppConfig[]  @relation("UpdatedAppConfigs")
+  stockAdjustmentLogs       StockAdjustmentLog[]
+  financialTransactions     FinancialTransaction[]
+  cashRegisterShifts        CashRegisterShift[]
+
+  createdRoles              Role[] @relation("CreatedRoles")
+  updatedRoles              Role[] @relation("UpdatedRoles")
+
+  createdCompanyProfiles    CompanyProfile[] @relation("CreatedCompanyProfiles")
+  updatedCompanyProfiles    CompanyProfile[] @relation("UpdatedCompanyProfiles")
+
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  permissions RolePermission[]
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdByUserId String?
+  updatedByUserId String?
+  createdBy   User?    @relation("CreatedRoles", fields: [createdByUserId], references: [id])
+  updatedBy   User?    @relation("UpdatedRoles", fields: [updatedByUserId], references: [id])
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  action      String
+  subject     String
+  description String?
+  roles       RolePermission[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([action, subject])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  assignedAt   DateTime   @default(now())
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Party {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?  @unique
+  address   String?
+  type      String // "CUSTOMER" or "SUPPLIER"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdByUserId String?
+  updatedByUserId String?
+  createdBy User?    @relation("CreatedParties", fields: [createdByUserId], references: [id])
+  updatedBy User?    @relation("UpdatedParties", fields: [updatedByUserId], references: [id])
+  
+  purchaseBills PurchaseBill[]
+  saleRecords   SaleRecord[]
+  companyId     String
+  company       CompanyProfile @relation(fields: [companyId], references: [id])
+
+  @@map("parties")
+}
+
+model Product {
+  id                 String      @id @default(cuid())
+  name               String
+  code               String?     @unique
+  category           String?
+  barcode            String?
+  units              Json
+  sellingPrice       Float
+  defaultQuantity    Float       @default(1)
+  isActive           Boolean     @default(true)
+  isService          Boolean     @default(false)
+  productSpecificTaxRate Float?
+  description        String?
+  imageUrl           String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  createdByUserId    String?
+  updatedByUserId    String?
+  createdBy          User?       @relation("CreatedProducts", fields: [createdByUserId], references: [id])
+  updatedBy          User?       @relation("UpdatedProducts", fields: [updatedByUserId], references: [id])
+
+  productDiscountConfigurations ProductDiscountConfiguration[]
+  
+  batches            ProductBatch[]
+  stockAdjustmentLogs StockAdjustmentLog[]
+  companyId          String
+  company            CompanyProfile @relation(fields: [companyId], references: [id])
+  purchaseBillItems  PurchaseBillItem[]
+
+  @@map("products")
+}
+
+model ProductBatch {
+  id                String   @id @default(cuid())
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  purchaseBillItemId String?  @unique
+  purchaseBillItem  PurchaseBillItem? @relation(fields: [purchaseBillItemId], references: [id])
+  batchNumber       String?
+  quantity          Float
+  costPrice         Float
+  sellingPrice      Float
+  expiryDate        DateTime?
+  createdAt         DateTime @default(now())
+
+  @@map("product_batches")
+}
+
+
+model PurchaseBillItem {
+  id                 String   @id @default(cuid())
+  purchaseBillId     String
+  purchaseBill       PurchaseBill @relation(fields: [purchaseBillId], references: [id])
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id])
+  productNameAtPurchase String
+  quantityPurchased  Float
+  costPriceAtPurchase Float
+  subtotal           Float
+  batch              ProductBatch?
+
+  @@map("purchase_bill_items")
+}
+
+model PurchaseBill {
+  id                 String   @id @default(cuid())
+  supplierId         String
+  supplier           Party    @relation(fields: [supplierId], references: [id])
+  supplierBillNumber String?
+  purchaseDate       DateTime
+  items              PurchaseBillItem[]
+  notes              String?
+  totalAmount        Float
+  amountPaid         Float
+  paymentStatus      String   // e.g., 'COMPLETED', 'PAID', 'PARTIALLY_PAID'
+  payments           PurchasePayment[]
+  createdByUserId    String?
+  createdBy          User?    @relation("CreatedPurchaseBills", fields: [createdByUserId], references: [id])
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  companyId          String
+  company            CompanyProfile @relation(fields: [companyId], references: [id])
+  
+  @@map("purchase_bills")
+}
+
+model PurchasePayment {
+  id              String   @id @default(cuid())
+  purchaseBillId  String
+  purchaseBill    PurchaseBill @relation(fields: [purchaseBillId], references: [id])
+  paymentDate     DateTime
+  amountPaid      Float
+  method          String
+  reference       String?
+  notes           String?
+  recordedByUserId String?
+  recordedBy      User?    @relation("RecordedPurchasePayments", fields: [recordedByUserId], references: [id])
+  createdAt       DateTime @default(now())
+
+  @@map("purchase_payments")
+}
+
+
+model SaleRecord {
+  id                 String   @id @default(cuid())
+  recordType         String   // "SALE", "RETURN_TRANSACTION"
+  billNumber         String   @unique
+  date               DateTime
+  items              Json
+  subtotalOriginal   Float
+  totalItemDiscountAmount Float
+  totalCartDiscountAmount Float
+  netSubtotal        Float
+  appliedDiscountSummary Json?
+  activeDiscountSetId String?
+  taxRate            Float
+  taxAmount          Float
+  totalAmount        Float
+  paymentMethod      String   // "cash", "credit", "REFUND"
+  amountPaidByCustomer Float?
+  changeDueToCustomer Float?
+  status             String   // "COMPLETED_ORIGINAL", "ADJUSTED_ACTIVE", "RETURN_TRANSACTION_COMPLETED"
+  returnedItemsLog   Json?
+  originalSaleRecordId String?
+  isCreditSale       Boolean  @default(false)
+  creditOutstandingAmount Float?
+  creditLastPaymentDate DateTime?
+  creditPaymentStatus String?   // 'PENDING', 'PARTIALLY_PAID', 'FULLY_PAID'
+  paymentInstallments PaymentInstallment[]
+  customerId         String?
+  customer           Party?   @relation(fields: [customerId], references: [id])
+  createdByUserId    String?
+  createdBy          User?    @relation("CreatedSaleRecords", fields: [createdByUserId], references: [id])
+  companyId          String
+  company            CompanyProfile @relation(fields: [companyId], references: [id])
+  
+  @@map("sale_records")
+}
+
+
+model PaymentInstallment {
+  id              String   @id @default(cuid())
+  saleRecordId    String
+  saleRecord      SaleRecord @relation(fields: [saleRecordId], references: [id])
+  paymentDate     DateTime
+  amountPaid      Float
+  method          String
+  notes           String?
+  recordedByUserId String?
+  recordedBy      User?    @relation("RecordedPaymentInstallments", fields: [recordedByUserId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("payment_installments")
+}
+
+
+model DiscountSet {
+  id                String   @id @default(cuid())
+  name              String   @unique
+  isActive          Boolean  @default(true)
+  isDefault         Boolean  @default(false)
+  isOneTimePerTransaction Boolean @default(false)
+  globalCartPriceRuleJson Json?
+  globalCartQuantityRuleJson Json?
+  defaultLineItemValueRuleJson Json?
+  defaultLineItemQuantityRuleJson Json?
+  defaultSpecificQtyThresholdRuleJson Json?
+  defaultSpecificUnitPriceThresholdRuleJson Json?
+  buyGetRulesJson Json?
+  productConfigurations ProductDiscountConfiguration[]
+  createdByUserId   String?
+  updatedByUserId   String?
+  createdBy         User?    @relation("CreatedDiscountSets", fields: [createdByUserId], references: [id])
+  updatedBy         User?    @relation("UpdatedDiscountSets", fields: [updatedByUserId], references: [id])
+  companyId         String
+  company           CompanyProfile @relation(fields: [companyId], references: [id])
+
+  @@map("discount_sets")
+}
+
+model ProductDiscountConfiguration {
+  id                 String   @id @default(cuid())
+  discountSetId      String
+  discountSet        DiscountSet @relation(fields: [discountSetId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productNameAtConfiguration String
+  isActiveForProductInCampaign Boolean @default(true)
+  lineItemValueRuleJson Json?
+  lineItemQuantityRuleJson Json?
+  specificQtyThresholdRuleJson Json?
+  specificUnitPriceThresholdRuleJson Json?
+
+  @@map("product_discount_configurations")
+}
+
+model AppConfig {
+  id              String   @id
+  value           Json
+  updatedByUserId String?
+  updatedBy       User?    @relation("UpdatedAppConfigs", fields: [updatedByUserId], references: [id])
+
+  @@map("app_config")
+}
+
+
+model StockAdjustmentLog {
+  id              String   @id @default(cuid())
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id])
+  quantityChanged Float
+  reason          String   // 'LOST', 'DAMAGED', 'CORRECTION_ADD', 'CORRECTION_SUBTRACT'
+  notes           String?
+  adjustedAt      DateTime @default(now())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  companyId       String
+  company         CompanyProfile @relation(fields: [companyId], references: [id])
+
+  @@map("stock_adjustment_logs")
+}
+
+model FinancialTransaction {
+  id          String   @id @default(cuid())
+  date        DateTime
+  type        String   // 'INCOME' or 'EXPENSE'
+  amount      Float
+  category    String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyId   String
+  company     CompanyProfile @relation(fields: [companyId], references: [id])
+
+  @@map("financial_transactions")
+}
+
+model CashRegisterShift {
+  id              String   @id @default(cuid())
+  openingBalance  Float
+  closingBalance  Float?
+  notes           String?
+  startedAt       DateTime @default(now())
+  closedAt        DateTime?
+  status          String   // 'OPEN', 'CLOSED'
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  companyId       String
+  company         CompanyProfile @relation(fields: [companyId], references: [id])
+
+  @@map("cash_register_shifts")
+}
+
+model CompanyProfile {
+  id          String @id @default(cuid())
+  name        String @unique
+  address     String?
+  phone       String?
+  email       String?
+  website     String?
+  taxId       String?
+  logoUrl     String?
+  createdByUserId String?
+  updatedByUserId String?
+  createdBy   User?    @relation("CreatedCompanyProfiles", fields: [createdByUserId], references: [id])
+  updatedBy   User?    @relation("UpdatedCompanyProfiles", fields: [updatedByUserId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  parties     Party[]
+  products    Product[]
+  purchaseBills PurchaseBill[]
+  saleRecords SaleRecord[]
+  discountSets DiscountSet[]
+  stockAdjustmentLogs StockAdjustmentLog[]
+  financialTransactions FinancialTransaction[]
+  cashRegisterShifts    CashRegisterShift[]
+
+  @@map("company_profiles")
+}

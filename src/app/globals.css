@@ -1,0 +1,124 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', Arial, Helvetica, sans-serif; /* Ensure Inter is primary */
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 23%; /* Adjusted for a more subtle gradient */
+    --foreground: 0 0% 95%; /* Light grey/white for text */
+
+    --card: 0 0% 20%; /* #333333 */
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 20%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 217 100% 72%; /* #70a1ff Sky Blue - For interactive elements */
+    --primary-foreground: 217 100% 15%; /* Darker blue for text on sky blue buttons */
+
+    --secondary: 0 0% 20%; /* Slightly darker dark grey */
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 60%; /* Lighter grey for muted text */
+
+    --accent: 217 100% 72%; /* Sky Blue */
+    --accent-foreground: 217 100% 15%;
+
+    --destructive: 0 62.8% 30.6%; /* Default dark theme destructive */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 30%; /* Border color */
+    --input: 0 0% 22%; /* Input background - slightly different from card */
+    --ring: 217 100% 72%; /* Sky Blue for focus rings */
+    --radius: 1rem;
+
+    /* Chart colors - retain from original but ensure they fit dark theme */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Sidebar variables - adjusted for consistency if sidebar is used, otherwise less critical for this POS */
+    --sidebar-background: 0 0% 18%; /* Slightly different from main card for visual separation */
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 217 100% 72%; /* Sky Blue */
+    --sidebar-primary-foreground: 217 100% 15%;
+    --sidebar-accent: 0 0% 28%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 35%;
+    --sidebar-ring: 217 100% 72%;
+  }
+
+  .dark {
+    --background: 0 0% 24%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 21%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 20%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 217 100% 72%;
+    --primary-foreground: 217 100% 15%;
+    --secondary: 0 0% 20%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 25%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 217 100% 72%;
+    --accent-foreground: 217 100% 15%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 30%;
+    --input: 0 0% 22%;
+    --ring: 217 100% 72%;
+    
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    --sidebar-background: 0 0% 23%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 217 100% 72%;
+    --sidebar-primary-foreground: 217 100% 15%;
+    --sidebar-accent: 0 0% 28%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 0 0% 35%;
+    --sidebar-ring: 217 100% 72%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Apply dark theme by default */
+    @apply dark;
+  }
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border) / 0.5); /* dark, semi-transparent thumb */
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--accent) / 0.7); /* highlights on hover */
+}
