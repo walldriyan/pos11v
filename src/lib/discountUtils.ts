@@ -5,7 +5,6 @@ import {
   type SaleItem,
   type DiscountSet,
   type AppliedRuleInfo,
-  type ProductBatch,
 } from '@/types';
 
 interface CalculateDiscountsInput {
@@ -16,7 +15,7 @@ interface CalculateDiscountsInput {
 
 interface CalculatedDiscountsOutput {
   itemDiscounts: Map<
-    string,
+    string, // saleItemId
     {
       ruleName: string;
       ruleCampaignName: string;
@@ -86,17 +85,20 @@ export function calculateDiscountsForItems(
 
   result.lineItems.forEach((line) => {
     if (line.totalDiscount > 0) {
-      // Aggregate rule names if multiple rules applied to one line
-      const ruleNames = line.appliedRules.map((r) => r.name).join(', ');
-      itemDiscounts.set(line.lineId, {
-        ruleName: ruleNames,
-        ruleCampaignName: activeCampaign.name,
-        perUnitEquivalentAmount:
-          line.quantity > 0 ? line.totalDiscount / line.quantity : 0,
-        totalCalculatedDiscountForLine: line.totalDiscount,
-        ruleType: 'custom_item_discount', // Using a generic type for the summary view
-        appliedOnce: false, // This detail is in the full summary
-      });
+      // For simplicity in the UI, we'll just show the first rule's name if multiple applied.
+      // A more complex UI could iterate through `line.appliedRules`.
+      const primaryRuleInfo = line.appliedRules[0]?.appliedRuleInfo;
+      if (primaryRuleInfo) {
+        itemDiscounts.set(line.lineId, {
+          ruleName: primaryRuleInfo.sourceRuleName,
+          ruleCampaignName: primaryRuleInfo.discountCampaignName,
+          perUnitEquivalentAmount:
+            line.quantity > 0 ? line.totalDiscount / line.quantity : 0,
+          totalCalculatedDiscountForLine: line.totalDiscount,
+          ruleType: primaryRuleInfo.ruleType, 
+          appliedOnce: !!primaryRuleInfo.appliedOnce,
+        });
+      }
     }
   });
 

@@ -27,7 +27,7 @@ export class BatchSpecificRule implements IDiscountRule {
     }
     
     const lineResult = result.getLineItem(targetLineItem.lineId);
-    if (!lineResult) return;
+    if (!lineResult || lineResult.totalDiscount > 0) return; // Skip if a higher-priority discount exists
     
     const lineTotal = targetLineItem.price * targetLineItem.quantity;
     const rulesToConsider = [

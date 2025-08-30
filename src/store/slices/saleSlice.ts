@@ -1,7 +1,7 @@
 
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import type { Product, SaleItem, DiscountSet, SpecificDiscountRuleConfig, AppliedRuleInfo, ProductDiscountConfiguration, UnitDefinition, ProductBatch, BatchDiscountConfiguration } from '@/types';
+import type { Product, SaleItem, DiscountSet, AppliedRuleInfo, ProductBatch, BatchDiscountConfiguration } from '@/types';
 import { calculateDiscountsForItems } from '@/lib/discountUtils';
 
 interface SaleState {
@@ -288,7 +288,7 @@ export const selectCalculatedTax = createSelector(
 
             const itemNetValueBeforeTax = netValueAfterItemDiscount - itemProportionalCartDiscount;
             
-            const productTaxRateDecimal = ((productDetails.productSpecificTaxRate ?? globalTaxRate) || 0) / 100;
+            const productTaxRateDecimal = ((productDetails.productSpecificTaxRate ?? globalTaxRate) || 0); // Tax rate is already a decimal
             totalTax += Math.max(0, itemNetValueBeforeTax) * productTaxRateDecimal;
         });
 

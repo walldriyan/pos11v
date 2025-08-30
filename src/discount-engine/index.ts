@@ -1,7 +1,7 @@
 // src/discount-engine/index.ts
 
-import { DiscountContext, LineItemData } from './core/context';
-import { DiscountResult, LineItemResult } from './core/result';
+import { DiscountContext } from './core/context';
+import { DiscountResult } from './core/result';
 import { IDiscountRule } from './rules/interface';
 
 import { ProductLevelRule } from './rules/product-level-rule';

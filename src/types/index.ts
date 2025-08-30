@@ -1,7 +1,14 @@
-
-
-
-
+// This represents the configuration for discounts on a specific product batch
+export interface BatchDiscountConfiguration {
+  id: string;
+  discountSetId: string;
+  discountSet?: DiscountSet;
+  productBatchId: string;
+  productBatch?: ProductBatch;
+  isActiveForBatchInCampaign: boolean;
+  lineItemValueRuleJson: SpecificDiscountRuleConfig | null;
+  lineItemQuantityRuleJson: SpecificDiscountRuleConfig | null;
+}
 
 export interface BuyGetRule {
     buyProductId: string;
@@ -101,6 +108,7 @@ export interface DiscountSet {
   defaultSpecificUnitPriceThresholdRuleJson: SpecificDiscountRuleConfig | null;
   buyGetRulesJson?: BuyGetRule[] | null;
   productConfigurations?: ProductDiscountConfiguration[]; 
+  batchConfigurations?: BatchDiscountConfiguration[]; // NEW
   createdByUserId?: string | null;
   updatedByUserId?: string | null;
   createdAt?: string;
@@ -387,7 +395,7 @@ export interface Role {
   id: string;
   name: string;
   description?: string | null;
-  permissions?: Permission[];
+  permissions?: { permission: Permission }[];
   createdAt?: string; 
   updatedAt?: string; 
   createdByUserId?: string | null;
@@ -488,6 +496,13 @@ export type ProductDiscountConfigurationFormData = Omit<ProductDiscountConfigura
   productName?: string;
 };
 
+export type BatchDiscountConfigurationFormData = Omit<BatchDiscountConfiguration, 'id' | 'discountSetId' | 'productBatchId' | 'productBatch'> & {
+    _key?: string;
+    productBatchId?: string;
+    batchIdentifier?: string; // e.g., "Product Name (Batch: 123)"
+};
+
+
 export interface DiscountSetFormData {
   id?: string;
   name: string;
@@ -502,6 +517,7 @@ export interface DiscountSetFormData {
   defaultSpecificUnitPriceThresholdRuleJson: SpecificDiscountRuleConfig | null;
   buyGetRulesJson?: BuyGetRule[] | null;
   productConfigurations: ProductDiscountConfigurationFormData[];
+  batchConfigurations?: BatchDiscountConfigurationFormData[]; // NEW
 }
 
 export enum TransactionTypeEnum {

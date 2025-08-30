@@ -1,5 +1,5 @@
 // src/discount-engine/core/context.ts
-import type { SaleItem, User } from '@/types';
+import type { SaleItem, User, ProductBatch } from '@/types';
 
 /**
  * Represents a single line in the shopping cart, enhanced for the discount engine.
