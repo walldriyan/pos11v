@@ -1,7 +1,7 @@
 
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
-import type { Product, SaleItem, DiscountSet, SpecificDiscountRuleConfig, AppliedRuleInfo, ProductDiscountConfiguration, UnitDefinition, ProductBatch } from '@/types';
+import type { Product, SaleItem, DiscountSet, SpecificDiscountRuleConfig, AppliedRuleInfo, ProductDiscountConfiguration, UnitDefinition, ProductBatch, BatchDiscountConfiguration } from '@/types';
 import { calculateDiscountsForItems } from '@/lib/discountUtils';
 
 interface SaleState {
@@ -277,7 +277,7 @@ export const selectCalculatedTax = createSelector(
             const itemOriginalPrice = item.price;
             const itemOriginalLineValue = itemOriginalPrice * item.quantity;
 
-            let itemLevelDiscountForLine = calculatedDiscounts.itemDiscounts.get(item.id)?.totalCalculatedDiscountForLine || 0;
+            let itemLevelDiscountForLine = calculatedDiscounts.itemDiscounts.get(item.saleItemId)?.totalCalculatedDiscountForLine || 0;
             const netValueAfterItemDiscount = itemOriginalLineValue - itemLevelDiscountForLine;
 
             const subtotalNetOfItemDiscountsOnly = subtotalOriginal - calculatedDiscounts.totalItemDiscountAmount;
@@ -288,7 +288,7 @@ export const selectCalculatedTax = createSelector(
 
             const itemNetValueBeforeTax = netValueAfterItemDiscount - itemProportionalCartDiscount;
             
-            const productTaxRateDecimal = (productDetails.productSpecificTaxRate ?? globalTaxRate * 100) / 100;
+            const productTaxRateDecimal = ((productDetails.productSpecificTaxRate ?? globalTaxRate) || 0) / 100;
             totalTax += Math.max(0, itemNetValueBeforeTax) * productTaxRateDecimal;
         });
 
